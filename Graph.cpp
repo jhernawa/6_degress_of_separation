@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
-
+#include <queue>
 using namespace std;
 
 typedef pair< string, int > thePair;
@@ -44,7 +44,8 @@ vector< Node*> Graph::buildGraph( ifstream& infile )
 {
   string prev = "";
   int index = 0;
-  
+  vector<thePair> list; 
+ 
   bool have_header = false;
   while(infile)
   {
@@ -64,7 +65,7 @@ vector< Node*> Graph::buildGraph( ifstream& infile )
     while(ss)
     { 
       string next;
-      if(!getline(ss,next, '\t')
+      if(!getline(ss,next, '\t'))
       {
         break;
       }
@@ -77,7 +78,7 @@ vector< Node*> Graph::buildGraph( ifstream& infile )
      // }
       ////////////////////
          
-     string actorName( argv[0] );
+     string actorName( record[0] );
      string movie_title( record[1] );
      int movie_year =  stoi( record[2] );
    
@@ -92,12 +93,12 @@ vector< Node*> Graph::buildGraph( ifstream& infile )
        verticesL.push_back(newNode);
        index++;
        prev = record[0];
-       list = list.clear();
+       list.clear();
        vertices++;
      }
      thePair movieYear;
      movieYear.first = record[1];
-     movieYear.second = record[2];
+     movieYear.second = movie_year;
      list.push_back(movieYear);
     
  
@@ -110,13 +111,13 @@ vector< Node*> Graph::buildGraph( ifstream& infile )
   return verticesL;
 
 }
-Graph:: listDownAdjList()
+void Graph:: listDownAdjList()
 {
   for( int i = 0; i< verticesL.size(); i++ )
   {
     for( int j = 0 ; j< verticesL[i]->list.size() ; j++ )
     {
-      thePair currentMovieYear = vertices[i]->list[j];
+      thePair currentMovieYear = verticesL[i]->list[j];
 
       for( int k = 0 ; k < verticesL.size(); k++ )
       {
@@ -125,12 +126,12 @@ Graph:: listDownAdjList()
           continue;
         }
        
-        for( int l = 0; l < vertices[k]->list.size(); l++ )
+        for( int l = 0; l < verticesL[k]->list.size(); l++ )
         {
-          if( currentMovieYear == vertices[k]->list[l] )
+          if( currentMovieYear == verticesL[k]->list[l] )
           {
-            vertices[i]->adj.push_back( vertices[k]->index );
-            edgesDirected = edgesDirected + 2;
+            verticesL[i]->adj.push_back( verticesL[k]->index );
+            edgesDirected = edgesDirected + 1;
           }
         }
       }
@@ -140,16 +141,16 @@ Graph:: listDownAdjList()
 
 }
 
-void Graph::runBST( /*vector<Node*> theVertices ,*/ vector<string> nameOfActors, ofstream& outfile )
+void Graph::runBFS( /*vector<Node*> theVertices ,*/ vector<string> nameOfActors, ofstream& outfile )
 {
   vector<int> indices;
   for( int i = 0; i < nameOfActors.size() ; i++ )
   {
     for( int j = 0; j< verticesL.size(); j++ )
     {
-      if( nameOfActors[i] == vertices[j]->nameActor )
+      if( nameOfActors[i] == verticesL[j]->nameActor )
       {
-        indices.push_back( vertices[j]->index );
+        indices.push_back( verticesL[j]->index );
         break;     //// mestinya udah bener
       }
     }
@@ -159,14 +160,15 @@ void Graph::runBST( /*vector<Node*> theVertices ,*/ vector<string> nameOfActors,
     }
   } 
 
-  runBSTHelper( /*theVertices,*/ nameOfActors, outfile );
+  runBFSHelper( /*theVertices,*/ indices, outfile );
   
 
 
 }
 
-void Graph::runBSTHelper( /* vector< Node* > theVertices, */ vector<int> indices , ofstream& outfile )
+void Graph::runBFSHelper( /* vector< Node* > theVertices, */ vector<int> indices , ofstream& outfile )
 {
+  
   for( int i = 0; i < verticesL.size(); i++ )
   { 
     verticesL[i]->dist = std::numeric_limits<int>::max() ;
@@ -175,8 +177,10 @@ void Graph::runBSTHelper( /* vector< Node* > theVertices, */ vector<int> indices
   
   queue<Node*> toExplore;
  //vertex * start = verticesL[ indices[0] ];
-  toExplore.push( vertices[ indices[0] ] );
-  vertices[ indices[0] ]->dist = 0;
+ 
+  //int idxSourc = indices[0];
+  toExplore.push( verticesL[indices[0]] );
+  verticesL[ indices[0] ]->dist = 0;
   Node * curr;
 
   while(!toExplore.empty() )
@@ -184,13 +188,13 @@ void Graph::runBSTHelper( /* vector< Node* > theVertices, */ vector<int> indices
     curr = toExplore.front();
     toExplore.pop();
     
-    for(int j = 0; j < curr->adj.list(); j++ )
+    for(int j = 0; j < curr->adj.size(); j++ )
     {
       int adjIndex = curr->adj[j];
       if( verticesL[adjIndex] -> dist == std::numeric_limits<int>::max() )
       {
         verticesL[adjIndex]->dist = curr->dist + 1;
-        vertices[adjIndex]->prev = curr->index;
+        verticesL[adjIndex]->prev = curr->index;
         toExplore.push( verticesL[adjIndex] );
  
       } 
@@ -200,18 +204,18 @@ void Graph::runBSTHelper( /* vector< Node* > theVertices, */ vector<int> indices
 
   //START TRACING and print to the output file
   vector<string> thePath;
-  Node * curr = verticesL[ indices[1] ];
+  curr = verticesL[ indices[1] ];
   while( curr != verticesL[ indices[0] ] )
   {
     thePath.push_back( curr->nameActor );
     int prevNode = curr->prev;
     
-    boolean edges_found = false;
+    bool edges_found = false;
     for( int i = 0 ; i < curr->list.size(); i++ )
     {
       for( int j = 0; j < verticesL[prevNode]->list.size(); j++ )
       {
-        if( curr->list[i] == vertices[prevNode]->list[j] )
+        if( curr->list[i] == verticesL[prevNode]->list[j] )
         {
           string theYear = std::to_string(curr->list[i].second);  //convert dulu k string
           thePath.push_back( /*curr->list[i].second*/ theYear );
@@ -228,10 +232,10 @@ void Graph::runBSTHelper( /* vector< Node* > theVertices, */ vector<int> indices
     curr = verticesL[prevNode];
     
   }
-  thePath.push_back( verticesL[indices[0]]->actorName );
+  thePath.push_back( verticesL[indices[0]]->nameActor );
 
   //Printing out to the outfile
-  boolean edgesTime = false;
+  bool edgesTime = false;
   for( int i = thePath.size() -1 ; i >= 0; i-- )
   {
     if( edgesTime == false )
@@ -250,3 +254,11 @@ void Graph::runBSTHelper( /* vector< Node* > theVertices, */ vector<int> indices
 
 }
 
+int Graph::getNumberOfVertices() const
+{
+  return vertices;
+}
+int Graph::getDirectedEdges() const
+{
+  return edgesDirected;
+}

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-int pathfinder( int argc, char * argv[] )
+int main( int argc, char * argv[] )
 {
   if( argc != 5 )
   {
@@ -15,23 +15,23 @@ int pathfinder( int argc, char * argv[] )
   }  
   // opening file for the input 
   ifstream infile( argv[1] );
-  if( !infile.isOpen() )
+  if( !infile.is_open() )
   {
     cout << "input file cannot be opened ";
     return -1;
   }
   
   // opening file for the test pair
-  ifstream infilePair( argv[4] );
-  if(!infilePair.isOpen() )
+  ifstream infilePair( argv[3] );
+  if(!infilePair.is_open() )
   {
     cout << "test pair of file cannot be opened ";
     return -1;
   }
   
   // opening file for the output file
-  ofstream outfile( argv[5] );
-  if(!outfile.isOpen())
+  ofstream outfile( argv[4] );
+  if(!outfile.is_open())
   {
     cout<<"output file cannot be opened";
     return -1;
@@ -62,14 +62,15 @@ int pathfinder( int argc, char * argv[] )
   Graph theGraph; // HOW DO YOU CONSTRUCT THIS??
  //Graph theGraph(); hmm..
 
-  vector<Node*> theVertices = theGraph.build();  //kalo ga d pake buildGraph() ga usah return pa2
+  vector<Node*> theVertices = theGraph.buildGraph(infile);  //kalo ga d pake buildGraph() ga usah return pa2
   
+  outfile << "(actor)--[movie#@year]-->(actor)--..."<< endl;
   bool have_header = false;
   while( infilePair )
   {
     string s;
     
-    if(!getline(infilePair, s )
+    if(!getline(infilePair, s ))
     {
       break;
     }
@@ -85,21 +86,29 @@ int pathfinder( int argc, char * argv[] )
     {
       string next;
      
-      if(!getline(ss, next,'\t')
+      if(!getline(ss, next,'\t'))
       {
         break;
       }
       
-      nameOfActor.push_back(next);
+      nameOfActors.push_back(next);
     }
 
     // if(nameOfActors.size() != 2 ) // ga perlu since it makes no sense
     // {
     //   continue;
     // }
-    theGraph.runBST( /*theVertices,*/ nameOfActors, outfile ); // per line  
+    theGraph.runBFS( /*theVertices,*/ nameOfActors, outfile ); // per line  
 
   } 
+
+  /////////////
+  int vertices = theGraph.getNumberOfVertices();
+  int edgesDirected = theGraph.getDirectedEdges();
+  cout<< "#of vertices is " << vertices << endl;
+  cout<< "#of directedEdges is" << edgesDirected << endl;
+  
+  ////////////
 
   infile.close();
   infilePair.close();

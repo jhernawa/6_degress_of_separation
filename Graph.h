@@ -36,17 +36,18 @@ class Graph
     int edgesDirected; //number of edgesDirected
 
     void listDownAdjList();
-    void runBSTHelper();
+    void runBFSHelper(vector<int> indices, ofstream& out);
   public:
     Graph(); 
     ~Graph();
     vector<Node*> buildGraph( ifstream& infile );
-    void runBST( /* vector<Node*> theVertices ,*/ vector<string> nameOfActors, ofstream& outfile );
+    void runBFS( /* vector<Node*> theVertices ,*/ vector<string> nameOfActors, ofstream& outfile );
 
+   /////
+   int getNumberOfVertices()const;
+   int getDirectedEdges() const;
 
-
-
-
+  /////
 
 
 
