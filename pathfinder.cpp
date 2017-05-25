@@ -103,10 +103,10 @@ int main( int argc, char * argv[] )
   } 
 
   /////////////
-  int vertices = theGraph.getNumberOfVertices();
-  int edgesDirected = theGraph.getDirectedEdges();
-  cout<< "#of vertices is " << vertices << endl;
-  cout<< "#of directedEdges is" << edgesDirected << endl;
+  //int vertices = theGraph.getNumberOfVertices();
+  //int edgesDirected = theGraph.getDirectedEdges();
+  //cout<< "#of vertices is " << vertices << endl;
+  //cout<< "#of directedEdges is" << edgesDirected << endl;
   
   ////////////
 
