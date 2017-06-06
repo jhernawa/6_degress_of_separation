@@ -655,7 +655,7 @@ void Graph1:: runBFS( vector<string> nameOfActors, ofstream& outfile)
     curr= toExplore.front();
     toExplore.pop();
  
-    vector< NodeActor* > theCurrNeighboors;
+    vector< NodeActor* > theCurrNeighboors; 
     vector< NodeMovieYear* > thePrevMovies;
     
     NodeMovieYear* curr1;
@@ -687,9 +687,10 @@ void Graph1:: runBFS( vector<string> nameOfActors, ofstream& outfile)
       }
     }
  
+    
     theCurrNeighboors.clear();
     thePrevMovies.clear();
-
+   
   }
 
   printToOutfile( nameOfActors, outfile);

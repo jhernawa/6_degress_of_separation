@@ -24,3 +24,14 @@
 
 # TSV files
 *.tsv
+
+!breakLoop.cpp
+!hell
+!runTest.cpp
+!test
+!test.txt
+!pa4
+!dang
+!file1.txt
+!file2.txt
+!file3.txt
