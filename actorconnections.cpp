@@ -1,3 +1,10 @@
+/**
+ * CSE 100 PA4 C++ Graph
+ *
+ * Author: Melvin Wijaya, Jesslyn Hernawan
+ * Date: 6/5/2017
+ * Assignment: PA4
+ */
 #include "Graph1.h"
 
 #include <vector>
@@ -8,6 +15,7 @@ using namespace std;
 
 int main( int argc, char* argv[] )
 {
+  // argument is not exactly 4 
   if( argc != 5 )
   {
     cout << "Invalid argument"<< endl;
@@ -61,12 +69,13 @@ int main( int argc, char* argv[] )
   // create priority queue based on year form the input file
   Graph1 myGraph;
 
-  myGraph.createQueue(infile);
+  myGraph.createQueue(infile); // sort the movies list ascending based on year
 
   outfile<< "Actor1\tActor2\tYear\n";
 
   bool have_header = false;
 
+  //start reading the file that contains the pair of actors
   while( infilePair )
   {
     string s;
@@ -115,10 +124,11 @@ int main( int argc, char* argv[] )
       return -1;
     }
 
-  }//while loop outer
+  }
 
   infile.close();
   infilePair.close();
   outfile.close();
 
+  
 }

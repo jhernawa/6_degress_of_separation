@@ -1,3 +1,10 @@
+/**
+ * CSE 100 PA4 C++ Graph
+ *
+ * Author: Melvin Wijaya, Jesslyn Hernawan
+ * Date: 6/5/2017
+ * Assignment: PA4
+ */
 #include "Graph1.h"
 
 #include <limits>
@@ -10,17 +17,21 @@
 #include <queue>
 #include <functional>
 #include <queue>
+
 using namespace std;
 
-DisjointSet::DisjointSet() //how to define this?
+/* constructor for the DisjointSet*/
+DisjointSet::DisjointSet()
 {
 
 }
+
+/*find the set where a vertex belongs to*/
 string DisjointSet:: find( string theLostNode )
 {
   if( graphTable.find( theLostNode ) == graphTable.end() )
   {
-    return "";
+    return "";  //if cannot be found in the current disjoint set, then return empty string
   }
 
   vector<string> thePathList; //to keep track with the path for path compression
@@ -30,6 +41,7 @@ string DisjointSet:: find( string theLostNode )
     return theLostNode;
   }
 
+  //listing down the path of a vertex until it reaches the sentinel node
   string curr = theLostNode;
   thePathList.push_back(curr);
   while( graphTable[curr] != "" )
@@ -47,22 +59,24 @@ string DisjointSet:: find( string theLostNode )
   return thePathList[thePathList.size() -1];
 }
 
+/* union two set*/
 void DisjointSet:: toUnion( string firstNode, string secondNode )
 {
   string sentinel1 = find(firstNode);
   string sentinel2 = find(secondNode);
 
-  if( sentinel1 == "" && sentinel2 == "")
+  if( sentinel1 == "" && sentinel2 == "") // vertices are not inside any set
   {
     graphTable.insert( {firstNode,""} );
     graphTable.insert( {secondNode, firstNode} );
     sentinelSize.insert( {firstNode, 2 } );
   }
-  else if( sentinel1 == sentinel2 )
+  else if( sentinel1 == sentinel2 ) // when two vertices belong to the same set
+                                   // then cancel union
   {
     return;
   }
-  else
+  else // either one of the vertices is not in any set
   {
     if( sentinel1 == "" || sentinel2 == "" )
     {
@@ -77,7 +91,7 @@ void DisjointSet:: toUnion( string firstNode, string secondNode )
         sentinelSize[ sentinel1 ]++;
       }
     }
-    else //compare sentinel size
+    else //compare sentinel size and begin union by size
     {
       if( sentinelSize[sentinel1] >= sentinelSize[sentinel2] )
       {
@@ -94,13 +108,15 @@ void DisjointSet:: toUnion( string firstNode, string secondNode )
     }
   }
 }
+
+/* solve the actorconections problem using the disjoint set*/
 void Graph1:: findActorConnectionThruDT( vector<string> nameOfActors , ofstream& outfile )
 {
-   DisjointSet mySet;
+  DisjointSet mySet;
   
   std::priority_queue< nodePQ, vector<nodePQ>, nodePQComp > pq1 = pq;
 
-  int theYearConnection;
+  int theYearConnection; //keep track with the earliest year
   nodePQ currNodePQ = pq1.top();
   pq1.pop();
   theYearConnection = currNodePQ.year;
@@ -112,17 +128,16 @@ void Graph1:: findActorConnectionThruDT( vector<string> nameOfActors , ofstream&
     int sizeOfActorList = currNodePQ.actorList.size();
     if( sizeOfActorList == 1 )
     {
-      if( mySet.graphTable.find( currNodePQ.actorList[0] ) == mySet.graphTable.end() ) //INI DI GANTI biar lbih cpet
+      // actor is not in any set yet, so create this vertex as a sentinel node
+      if( mySet.graphTable.find( currNodePQ.actorList[0] ) == mySet.graphTable.end() )
       {
         mySet.graphTable.insert( { currNodePQ.actorList[0], ""} );
         mySet.sentinelSize.insert( {currNodePQ.actorList[0] , 1 } );
       } 
-      //else
-     // {
-             // ignore
-     // }
+      
     }
 
+    //union each actor inside a movie
     for( int i = 0; i < currNodePQ.actorList.size() - 1; i++ )
     {
       mySet.toUnion( currNodePQ.actorList[i], currNodePQ.actorList[i+1] );
@@ -146,7 +161,7 @@ void Graph1:: findActorConnectionThruDT( vector<string> nameOfActors , ofstream&
         connected = true;
         outfile<<nameOfActors[0]<<"\t"<<nameOfActors[1]<<"\t"<<"9999\n";
       }
-      else  // sentinel1 = "A" & sentinel2 = "A"
+      else  // for instance, sentinel1 = "A" & sentinel2 = "A"
       {
         connected = true;
         outfile<<nameOfActors[0]<<"\t"<<nameOfActors[1]<<"\t"<<theYearConnection<<"\n";
@@ -167,10 +182,11 @@ void Graph1:: findActorConnectionThruDT( vector<string> nameOfActors , ofstream&
         theYearConnection = currNodePQ.year;
       }
     }
-  }// end of while loop
+  }
 
 }
 
+/* constructor for the nodePQ */
 nodePQ::nodePQ( string movieTitle, int yearMade, vector<string> aList )
 {
   movieName = movieTitle;
@@ -178,6 +194,7 @@ nodePQ::nodePQ( string movieTitle, int yearMade, vector<string> aList )
   actorList = aList; 
 
 }
+/* overload the < operator for the nodePQ */
 bool nodePQ:: operator<(const nodePQ& other)
 {
   if( year != other.year )
@@ -189,9 +206,10 @@ bool nodePQ:: operator<(const nodePQ& other)
 
 }
 
+/*list down the movies list in ascending order*/
 void Graph1::createQueue( ifstream & infile)
 {
-  unordered_map<string, NodeMovieYear*> notSortedTable;
+  unordered_map<string, NodeMovieYear*> notSortedTable; //save the movies and year not in order
 
   bool have_header = false;
 
@@ -247,10 +265,10 @@ void Graph1::createQueue( ifstream & infile)
       notSortedTable[theMovieYear]->listActors.push_back(record[0] );
     }
 
-  }//end of while infile
+  }
 
 
-    //creating the priority queue
+    //creating the priority queue for the movies listed ascendingly
     for( auto element : notSortedTable )
     {
       string movieTitle = element.second->headerMovie;
@@ -259,29 +277,11 @@ void Graph1::createQueue( ifstream & infile)
       pq.push(theNodePQ);
     }
 
-  ///////////
- /**  int size = pq.size();
-    for( int i = 0; i < size ; i++ )
-    {
-      nodePQ oi = pq.top();
-      pq.pop();
-
-      cout << oi.movieName << " and " << oi.year << endl;
-      for(int j = 0; j < oi.actorList.size(); j++ )
-      {
-        cout<<oi.actorList[j]<<endl;
-
-      }
-
-    }
-  */
-  ///////////////
 }
+/* Find actor connection through BFS */
 void Graph1::findActorConnection( vector<string> nameOfActors, ofstream& outfile )
 {
-  std::priority_queue<nodePQ, vector<nodePQ>, nodePQComp> pq1 = pq;  ////
-
-
+  std::priority_queue<nodePQ, vector<nodePQ>, nodePQComp> pq1 = pq; 
 
   int theYearConnection; //earliest year in which those actors are connected
 
@@ -295,7 +295,7 @@ void Graph1::findActorConnection( vector<string> nameOfActors, ofstream& outfile
   {
     for( int i = 0; i< currNodePQ.actorList.size();i++ )
     { 
-      //vertices
+      //build vertices
       if(verticesL.find(currNodePQ.actorList[i]) == verticesL.end() )
       {
         verticesL.insert( {currNodePQ.actorList[i], new NodeActor(currNodePQ.actorList[i])} );
@@ -310,7 +310,7 @@ void Graph1::findActorConnection( vector<string> nameOfActors, ofstream& outfile
         verticesL[currNodePQ.actorList[i] ]->movieYear.push_back(movieAndYear);        
       }
 
-      //moviesL
+      //build moviesL
       string yearr = to_string(currNodePQ.year);
       string movieAndYear = currNodePQ.movieName + yearr;
       if(moviesL.find(movieAndYear) == moviesL.end() )
@@ -324,45 +324,18 @@ void Graph1::findActorConnection( vector<string> nameOfActors, ofstream& outfile
       }
     
     }
-   // check for graph
- /**   int count = 0;
-    for( auto element : verticesL )
-    {
-   
-      cout<< count << element.second->headerActor<<endl;
-      for( int i = 0; i < element.second->movieYear.size(); i++ )
-      {
-        cout << element.second->movieYear[i] <<endl; 
-      }
-      count++;
-     
-    }*/
-  /**  cout<<"\nCheck for Edges"<<endl;
-   for( auto element : moviesL )
-   {
-    cout << element.second->headerMovie << " and " << element.second->headerYear << endl;
 
-    for( int i = 0; i < element.second->listActors.size(); i++)
-    {
-      cout<< element.second->listActors[i]<<endl;
-
-    }
-   }*/
-////////////////////////////////////
-
+    //check for connection
     connected = runBFSofActorConnection(nameOfActors);
     if( connected == false)
     {
       if( pq1.empty())
       {
-    //    cout<< "yng ke 2 jatuh d sini"<<endl;
         connected= true;
         outfile<<nameOfActors[0]<<"\t"<<nameOfActors[1]<<"\t"<<"9999\n";
       }
       else
       {
-        //theYearConnection = currNodePQ.year;
-      // cout<<"yg pertama jatuh d sini"<<endl;
         currNodePQ= pq1.top();
         pq1.pop();
         theYearConnection = currNodePQ.year;
@@ -370,28 +343,28 @@ void Graph1::findActorConnection( vector<string> nameOfActors, ofstream& outfile
     }
     else
     {
-     //  cout<<"yg k dua jatuh d sini"<<endl;
        connected = true;
        outfile<<nameOfActors[0]<<"\t"<<nameOfActors[1]<<"\t"<<theYearConnection<<"\n";
     }
    
-  }//end of while connected
+  }
 
   verticesL.clear();
   moviesL.clear();
 
 }
-
+/* run BFS to help with the actor connection problems. Return true if there is a connection.
+ * False, otherwise.*/
 bool Graph1::runBFSofActorConnection( vector<string> nameOfActors )
 {
+  // source is not found in the current graph
   if(verticesL.find(nameOfActors[0]) == verticesL.end())
   {
- //  cout<<"------------"<<endl;
     return false;
   }
+  // destination is not found in the current graph
   if(verticesL.find(nameOfActors[1]) == verticesL.end())
   {
-  // cout<<"**"<<endl;
     return false;
   }
 
@@ -415,11 +388,12 @@ bool Graph1::runBFSofActorConnection( vector<string> nameOfActors )
     curr= toExplore.front();
     toExplore.pop();
  
-    vector< NodeActor* > theCurrNeighboors;
-    vector< NodeMovieYear* > thePrevMovies;
+    vector< NodeActor* > theCurrNeighboors; //list of the neighboors of the current vertex
+    vector< NodeMovieYear* > thePrevMovies; //the edge of each neighbor
     
     NodeMovieYear* curr1;
 
+    //listing down all the neighboors of the current vertex
     for( int i = 0; i < curr->movieYear.size(); i++ )
     {
       curr1 = moviesL[curr->movieYear[i] ];
@@ -434,6 +408,7 @@ bool Graph1::runBFSofActorConnection( vector<string> nameOfActors )
       }     
     }
     
+    
     for( int i = 0; i < theCurrNeighboors.size(); i++ )
     {
       NodeActor* temp = theCurrNeighboors[i];
@@ -447,33 +422,11 @@ bool Graph1::runBFSofActorConnection( vector<string> nameOfActors )
       }
     }
  
-    theCurrNeighboors.clear();
-    thePrevMovies.clear();
+    theCurrNeighboors.clear(); //clearing down the current vertex's neighboors for the next one
+    thePrevMovies.clear(); //clearing down the edge of each neighbor's for the next one
 
   }
    
-
-/**
-  //check for status after run bfs
-  cout << "CHECKING STATUS AFTER BFS"<<endl;
-
-  for( auto element : verticesL )
-  { 
-    cout<<element.second->headerActor<<endl;
-    cout<<element.second->dist<<endl;
-    cout<<element.second->prev<<endl;
-    cout<<element.second->prevMovie<<endl;
-
-  }
-
-*/
-
-
-
-
-
- 
-
   //end of regular bfs
 
   //check for connection
@@ -481,8 +434,6 @@ bool Graph1::runBFSofActorConnection( vector<string> nameOfActors )
  
   if( curr1->prev == "" )
   {
-   //cout<<"nameOfActors is" << nameOfActors [1];
-   //cout<<"KOK BISA KESINI"<<endl;
     return false;
   }
 
@@ -492,21 +443,20 @@ bool Graph1::runBFSofActorConnection( vector<string> nameOfActors )
 
     if( curr1->headerActor == nameOfActors[0] )
     {
-  //   cout<< "sini trueeeeeeeeeeeeee"<<endl;
       return true;
     }
 
   }
-//   cout<<"malah false"<<endl;
   return false;
 }
 
-
+/* constructor for the WeightedEdge*/
 WeightedEdge:: WeightedEdge( string neighbors, int w )
 { 
   nM = neighbors;
   weight = w;
 }
+/* overload the < operator */
 bool WeightedEdge:: operator<( WeightedEdge const & other )
 {
   if( weight != other.weight )
@@ -517,6 +467,7 @@ bool WeightedEdge:: operator<( WeightedEdge const & other )
   return nM < other.nM;
 } 
 
+/* comparison class for the WeightedEdgeComp*/
 class WeightedEdgeComp
 {
   public:
@@ -525,27 +476,32 @@ class WeightedEdgeComp
       return *lhs<*rhs;
     }
 };
+
+/* constructor for the NodeActor */
 NodeActor:: NodeActor( string hActor )
 {
   headerActor = hActor;
   prev= "";
   dist =0 ;
   prevMovie = "";
-//  vector<string> movieYear;
   done = false;
 
 }
+/* constructor for the NodeMovieYear*/
 NodeMovieYear:: NodeMovieYear( string hMovie, string hYear )
 {
   headerMovie = hMovie;
   headerYear = hYear;
 }
 
+/* constructor for the Graph */
 Graph1:: Graph1()
 {
   built = true;
 
 }
+
+/* destructor for the graph*/
 Graph1:: ~Graph1()
 {
   for( auto element : verticesL )
@@ -557,6 +513,8 @@ Graph1:: ~Graph1()
     delete(element1.second);
   }
 }
+
+/* build the graph*/
 void Graph1:: buildGraph( ifstream& infile )
 {
   string prev = "";
@@ -565,6 +523,7 @@ void Graph1:: buildGraph( ifstream& infile )
 
   bool have_header = false;
 
+  //start reading the input file
   while(infile)
   {
     string s;
@@ -601,6 +560,7 @@ void Graph1:: buildGraph( ifstream& infile )
     string movie_year(record[2]);
 
     string theMovieYear = record[1] + record[2];
+    //begin creating the vertex for each actor name
     if(prev == "")
     {
       prev = record[0];
@@ -619,6 +579,7 @@ void Graph1:: buildGraph( ifstream& infile )
 
     }
 
+    //begin listing down the different movies
     if(moviesL.find(theMovieYear) == moviesL.end())
     {
       moviesL.insert( {theMovieYear, new NodeMovieYear( record[1], record[2] ) } );
@@ -630,11 +591,13 @@ void Graph1:: buildGraph( ifstream& infile )
     }
     
 
-  }//end of while
-  verticesL.insert( { prev, new NodeActor(prev) } );
+  }
+  verticesL.insert( { prev, new NodeActor(prev) } ); //create the last vertex for the last actor
   verticesL[prev]->movieYear = movieListOfEachActor;
 
 }
+
+/* run BFS for the pathfinder problem*/
 void Graph1:: runBFS( vector<string> nameOfActors, ofstream& outfile)
 {
   for( auto element : verticesL )
@@ -655,11 +618,12 @@ void Graph1:: runBFS( vector<string> nameOfActors, ofstream& outfile)
     curr= toExplore.front();
     toExplore.pop();
  
-    vector< NodeActor* > theCurrNeighboors; 
-    vector< NodeMovieYear* > thePrevMovies;
+    vector< NodeActor* > theCurrNeighboors; // list of the current vertex's neighboors
+    vector< NodeMovieYear* > thePrevMovies; //list of the edge of each neigbor
     
     NodeMovieYear* curr1;
 
+    //listing down all the current vertex's neighboors
     for( int i = 0; i < curr->movieYear.size(); i++ )
     {
       curr1 = moviesL[curr->movieYear[i] ];
@@ -688,14 +652,16 @@ void Graph1:: runBFS( vector<string> nameOfActors, ofstream& outfile)
     }
  
     
-    theCurrNeighboors.clear();
-    thePrevMovies.clear();
+    theCurrNeighboors.clear(); //clear the list of curr vertex's neighboors for the next one
+    thePrevMovies.clear(); //clear the list of edge of each neighbors for the next one
    
   }
 
-  printToOutfile( nameOfActors, outfile);
+  printToOutfile( nameOfActors, outfile); //printing to outfile
 
 }
+
+/*run dijkstra to solve the path finder problem*/
 void Graph1:: runDijkstra( vector<string> nameOfActors, ofstream& outfile )
 {
   for( auto element : verticesL )
@@ -705,7 +671,7 @@ void Graph1:: runDijkstra( vector<string> nameOfActors, ofstream& outfile )
     element.second->prevMovie = "";
     element.second->done = false;
   }
-  
+  //priority queue for the weighted edge
   std::priority_queue<WeightedEdge*, vector<WeightedEdge*>, WeightedEdgeComp > toExplore; 
   verticesL[nameOfActors[0]]->dist = 0;
   
@@ -726,8 +692,8 @@ void Graph1:: runDijkstra( vector<string> nameOfActors, ofstream& outfile )
     {
       curr->done = true;
       
-      vector<WeightedEdge*> theCurrNeighboors;
-      vector<NodeMovieYear*> thePrevMovies;
+      vector<WeightedEdge*> theCurrNeighboors; //list of the current neighbors
+      vector<NodeMovieYear*> thePrevMovies; //list of the edge of each neighbor
 
       NodeMovieYear * curr1;
       //list the curr neighboors
@@ -764,20 +730,20 @@ void Graph1:: runDijkstra( vector<string> nameOfActors, ofstream& outfile )
         }
       } 
     
-      theCurrNeighboors.clear();
-      thePrevMovies.clear();
+      theCurrNeighboors.clear(); // clear the curr neighboors for the next one
+      thePrevMovies.clear(); // clear the edge of each neighbor for the next one
 
-    } //if
-
-
-  }//end of toExplore.empty
+    }
+  }
   
-  printToOutfile( nameOfActors, outfile);
-
+  printToOutfile( nameOfActors, outfile); // print to outfile
 
 }
+
+/* print to outfile */
 void Graph1::printToOutfile( vector<string> nameOfActors, ofstream& outfile )
 {
+  //get the path from the source to the destination
   vector<string> thePath;
 
   NodeActor* curr = verticesL[nameOfActors[1] ];
@@ -797,10 +763,6 @@ void Graph1::printToOutfile( vector<string> nameOfActors, ofstream& outfile )
   }
   thePath.push_back( verticesL[ nameOfActors[0] ]->headerActor ); 
 
-//  for( int i = 0; i< thePath.size(); i++)
-//  {
-//    cout<< thePath[i]<<endl;
-//  }
   //start printing
   bool edgeTime = false;
   for( int i = thePath.size()-1 ; i >= 0 ; i-- )
@@ -820,24 +782,15 @@ void Graph1::printToOutfile( vector<string> nameOfActors, ofstream& outfile )
   outfile<<"\n";
 
 }
+
+/* get the number of vertices in the graph */
 int Graph1:: getNumberOfActors() const
 {
   return verticesL.size();
 }
+
+/* get the number of movies in the graph*/
 int Graph1:: getNumberOfMovies() const
 {
   return moviesL.size();
 }
-/**
-  cout<<"start printing"<<endl;
-  for(auto element : verticesL)
-  {
-    cout<< element.second->headerActor <<endl;
-    for(int i = 0 ; i<element.second->movieYear.size(); i++ )
-    {
-      cout<<element.second->movieYear[i] << endl;
-    }
-    cout << "\n" <<endl;
-  }
-  cout << "vertices end" << endl;
-*/
