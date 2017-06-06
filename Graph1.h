@@ -1,4 +1,3 @@
-#ifndef GRAPH1_H
 /**
  * CSE 100 PA4 C++ Graph
  * Authors: Melvin Wijaya, Jesslyn Hernawan
@@ -7,6 +6,8 @@
  *
  */
 
+
+#ifndef GRAPH1_H
 #include <vector>
 #include <fstream>
 #include <sstream>
