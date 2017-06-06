@@ -14,17 +14,19 @@ else
     LDFLAGS += -g
 endif
 
-all: pathfinder
-
+all: pathfinder actorconnections
 
 
 # include what ever source code *.h files pathfinder relies on (these are merely the ones that were used in the solution)
 
 #pathfinder: ActorGraph.o Graph.o
 
-pathfinder: Graph.o
+pathfinder: Graph1.o
 
-Graph.o : Graph.h
+actorconnections: Graph1.o
+
+Graph1.o : Graph1.h
+
 
 # include what ever source code *.h files ActorGraph relies on (these are merely the ones that were used in the solution)
 

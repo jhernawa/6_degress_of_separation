@@ -1,4 +1,4 @@
-#include "Graph.h"
+#include "Graph1.h"
 
 #include <vector>
 #include <iostream>
@@ -12,7 +12,9 @@ int main( int argc, char * argv[] )
   {
     cout << "invalid argument";
     return -1;
-  }  
+  }
+
+  
   // opening file for the input 
   ifstream infile( argv[1] );
   if( !infile.is_open() )
@@ -57,12 +59,11 @@ int main( int argc, char * argv[] )
     return -1;
   }
 
-  // start creting the graph
+  // start creating the graph
   
-  Graph theGraph; // HOW DO YOU CONSTRUCT THIS??
- //Graph theGraph(); hmm..
+  Graph1 theGraph; 
 
-  vector<Node*> theVertices = theGraph.buildGraph(infile);  //kalo ga d pake buildGraph() ga usah return pa2
+  theGraph.buildGraph(infile);
   
   outfile << "(actor)--[movie#@year]-->(actor)--..."<< endl;
   bool have_header = false;
@@ -93,23 +94,37 @@ int main( int argc, char * argv[] )
       
       nameOfActors.push_back(next);
     }
+    
+    if( nameOfActors.size() != 2)
+    {
+      continue;
+    }
 
-    // if(nameOfActors.size() != 2 ) // ga perlu since it makes no sense
-    // {
-    //   continue;
-    // }
-    theGraph.runBFS( /*theVertices,*/ nameOfActors, outfile ); // per line  
+    
+    
+    if( string(argv[2]) == "u" )
+    {
+      
+      theGraph.runBFS( nameOfActors, outfile ); // per line  
+    }
+    else if( string(argv[2]) == "w" )
+    {
+      theGraph.runDijkstra( nameOfActors, outfile ); //per linei////////////INI LAMA BNGT
+    }
+    else
+    {
+     cout << "invalid input"<< endl;
+     return -1;
+    }
 
   } 
 
-  /////////////
-  //int vertices = theGraph.getNumberOfVertices();
-  //int edgesDirected = theGraph.getDirectedEdges();
-  //cout<< "#of vertices is " << vertices << endl;
-  //cout<< "#of directedEdges is" << edgesDirected << endl;
-  
-  ////////////
-
+  ///////////// DELETE THIS
+  int numOfActors = theGraph.getNumberOfActors();
+  int numMovies = theGraph.getNumberOfMovies();
+  cout<< "#of Actors is " << numOfActors << endl;
+  cout<< "#of movies is " << numMovies << endl;
+  ///////////
   infile.close();
   infilePair.close();
   outfile.close();
