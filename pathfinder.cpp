@@ -1,7 +1,7 @@
 /**
  * CSE 100 PA4 C++ Graph
  *
- * Author: Melvin Wijaya, Jesslyn Hernawan
+ * Author: Jesslyn Hernawan
  * Date: 6/5/2017
  * Assignment: PA4
  */
